@@ -1,0 +1,7 @@
+<services>
+    <service id="appbundle.login_listener" class="AppBundle\EventListener\LoginListener">
+        <argument type="service" id="service_container" />
+        <tag name="kernel.event_listener" event="app.login" method="onLogin" />
+    </service>
+
+</services>

@@ -1,0 +1,20 @@
+{% extends "AppBundle:Admin:layout.html.twig" %}
+
+{% block containerUsers %}
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h2 class="sub-header">Добавление новости</h2> 
+        <form action="{{path('createNews')}}" method="POST">
+            <label>Заголовок новости</label>
+            <input type="text" name="title" required autofocus/><br>
+            <label>Текст новости</label>
+            <textarea name="text" required autofocus></textarea><br>
+            <label>Картинка новости(необязательно)</label>
+            <input type="text" name="picture"><br>
+            <h3 class="sub-header"></h3>
+            <input type="submit" value="Добавить">
+        </form>
+            {% if message is defined %}
+            <font color="green">{{message}}</font>
+        {% endif %}
+    </div>
+{% endblock %}

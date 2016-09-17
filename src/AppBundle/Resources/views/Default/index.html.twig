@@ -1,0 +1,34 @@
+{% extends "AppBundle:Default:layout.html.twig" %}
+
+{% block title %}
+    <title>Главная страница</title>
+{% endblock %}
+
+{% block news %}
+    {% for n in news %}
+        <div class="blog-post">
+            <h2 class="blog-post-title">{{n.title}}</h2> 
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="admin/news/{{n.id}}">Редактировать</a>
+            {% endif %}
+            <img src="{{n.picture}}" width="600" height="400"/>
+            <p class="blog-post-meta">{{n.createdAt|date('Создана d.m.Y в H:i')}} by {% if n.author == "admin" %}
+                <a href="#"><font color="red">{{n.author}}</font></a></p> {% elseif n.author != "admin" %}
+            <p class="blog-post-meta">{{n.createdAt|date('Создана d.m.Y в H:i')}} by <a href="#">{{n.author}}</a></p>
+            {% endif %}
+            
+            {% if n.lastUpdatedBy != null  %}
+                {% if n.lastUpdatedBy == "admin" %}
+                    <p class="blog-post-meta">{{n.updatedAt|date('Обновлена d.m.Y в H:i')}} by <a href="#"><font
+                                color = "red">{{n.lastUpdatedBy}}</font></a></p>
+                {% elseif n.lastUpdatedBy != "admin" %}
+                    <p class="blog-post-meta">{{n.updatedAt|date('Обновлена d.m.Y в H:i')}} by <a href="#">{{n.lastUpdatedBy}}</a></p>
+                {% endif %}
+                    
+                    
+            {% endif %}
+            <p>{{n.text}}</p>  
+            <br>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,12 @@
+# This file is auto-generated during the composer install
+parameters:
+    database_host: localhost
+    database_port: null
+    database_name: embodyco_symf2
+    database_user: embodyco_symf2
+    database_password: 'R&o~k6asSMpf@SeJ&x~20(@9'
+    mailer_transport: smtp
+    mailer_host: 127.0.0.1
+    mailer_user: null
+    mailer_password: null
+    secret: 630eb6a68fab4f6a96f1ab1854558549

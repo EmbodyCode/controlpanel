@@ -1,0 +1,21 @@
+{% extends "AppBundle:Admin:layout.html.twig" %}
+
+{% block containerUsers %}
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <h2 class="sub-header">Редактирования новости {{news.id}}</h2> 
+            <form action="{{ path('editnews', { 'id' : id }) }}" method="POST">
+                <label>Заголовок новости</label>
+                <input type="text" name="title" value="{{news.title}}"/><br>
+                <label for="1">Текст новости</label>
+                <textarea id="1" name="text">{{news.text}}</textarea><br>
+                <label>Картинка новости</label>
+                <input type="text" name="picture" value="{{news.picture}}"><br>
+                <input type="hidden" name="author" value="{{news.author}}">
+                <h3 class="sub-header"></h3>
+            <input type="submit" value="Сохранить">
+        </form>
+        {% if message is defined %}
+            <font color="green">{{message}}</font>
+        {% endif %}
+    </div>
+{% endblock %}
