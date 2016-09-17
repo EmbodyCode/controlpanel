@@ -1,72 +1,34 @@
-Symfony Standard Edition
+Админ-панель v1.0.0
 ========================
 
-Welcome to the Symfony Standard Edition - a fully-functional Symfony2
-application that you can use as the skeleton for your new applications.
+Добро пожаловать в репозиторий EmbodyCode. Это первый наш проект, который из себя
+будет что-то представлять на должном уровне. На данный момент у нас два человека в
+команде: Артур Булойчик(back-end) и Андрей Стратанович(front-end), однако если у
+кого-то будет желание поучаствовать в разработке всяких модулей для себя и на будущее —
+ждем вас в нашей небольшой, но уютной команде. Мы рады видеть всех.
 
-For details on how to download and get started with Symfony, see the
-[Installation][1] chapter of the Symfony Documentation.
-
-What's inside?
+Что здесь?
 --------------
 
-The Symfony Standard Edition is configured with the following defaults:
+А здесь у нас самописный модуль администраторской панели v1.0.0(will be updated), который
+включает в себя следующее:
 
-  * An AppBundle you can use to start coding;
+  * Добавление администратора в систему
 
-  * Twig as the only configured template engine;
+  * Управление пользователями (FOSUserBundle + some updates)
 
-  * Doctrine ORM/DBAL;
+  * Система бана пользователей
 
-  * Swiftmailer;
+  * Система добавления и редактирования новостей в заглушке ("/")
 
-  * Annotations enabled for everything.
+  * Список заблокированных пользователей и возможность удаления пользователей из забаненных
 
-It comes pre-configured with the following bundles:
+Всё это было реализовано с помощью:
 
-  * **FrameworkBundle** - The core Symfony framework bundle
+  * FOSUserBundle
+  * Личного опыта
 
-  * [**SensioFrameworkExtraBundle**][6] - Adds several enhancements, including
-    template and routing annotation capability
+Все модули и библиотеки доступны для скачки в интернете!
 
-  * [**DoctrineBundle**][7] - Adds support for the Doctrine ORM
+Спасибо за внимание!
 
-  * [**TwigBundle**][8] - Adds support for the Twig templating engine
-
-  * [**SecurityBundle**][9] - Adds security by integrating Symfony's security
-    component
-
-  * [**SwiftmailerBundle**][10] - Adds support for Swiftmailer, a library for
-    sending emails
-
-  * [**MonologBundle**][11] - Adds support for Monolog, a logging library
-
-  * [**AsseticBundle**][12] - Adds support for Assetic, an asset processing
-    library
-
-  * **WebProfilerBundle** (in dev/test env) - Adds profiling functionality and
-    the web debug toolbar
-
-  * **SensioDistributionBundle** (in dev/test env) - Adds functionality for
-    configuring and working with Symfony distributions
-
-  * [**SensioGeneratorBundle**][13] (in dev/test env) - Adds code generation
-    capabilities
-
-  * **DebugBundle** (in dev/test env) - Adds Debug and VarDumper component
-    integration
-
-All libraries and bundles included in the Symfony Standard Edition are
-released under the MIT or BSD license.
-
-Enjoy!
-
-[1]:  https://symfony.com/doc/2.7/book/installation.html
-[6]:  https://symfony.com/doc/current/bundles/SensioFrameworkExtraBundle/index.html
-[7]:  https://symfony.com/doc/2.7/book/doctrine.html
-[8]:  https://symfony.com/doc/2.7/book/templating.html
-[9]:  https://symfony.com/doc/2.7/book/security.html
-[10]: https://symfony.com/doc/2.7/cookbook/email.html
-[11]: https://symfony.com/doc/2.7/cookbook/logging/monolog.html
-[12]: https://symfony.com/doc/2.7/cookbook/assetic/asset_management.html
-[13]: https://symfony.com/doc/2.7/bundles/SensioGeneratorBundle/index.html
