@@ -9,3 +9,10 @@ services:
         arguments: [@service_container]
         tags:
             - { name: kernel.event_subscriber }
+      
+    security.access.blacklist_voter:
+        class:      AppBundle\Security\Authorization\Voter\ClientIpVoter
+        arguments:  ["@service_container", [46.53.195.112, 171.171.171.171]]
+        public:     false
+        tags:
+            - { name: security.voter }

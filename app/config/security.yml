@@ -28,3 +28,7 @@ security:
         - { path: ^/registration, role: ROLE_SUPER_ADMIN }
         - { path: ^/admin, role: ROLE_ADMIN }
         - { path: ^/, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        
+    access_decision_manager:
+        # strategy can be: affirmative, unanimous or consensus
+        strategy: unanimous
