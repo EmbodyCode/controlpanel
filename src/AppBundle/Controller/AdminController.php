@@ -6,6 +6,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use AppBundle\Entity\News;
+use AppBundle\Entity\BlacklistIp;
 
 class AdminController extends Controller {
 
@@ -29,36 +30,81 @@ class AdminController extends Controller {
                     . 'users' => $users));
     }
 
-    /**
-     * @Route("/admin/registration", name="reg")
-     */
-    public function regUserAction(Request $request) {
-        if ($request->getMethod() == "POST") {
-            $userManager = $this->get('fos_user.user_manager');
-            $user = $userManager->createUser();
-            $username = $request->get('username');
-            $check_user_is_exist = $userManager->findUserByUsername($username);
-            if ($check_user_is_exist) {
-                throw $this->createAccessDeniedException('User is exist!');
-            }
-            $password = $request->get('password');
-            $email = $request->get('email');
-            $createdAt = new \DateTime('now');
+    /* public function registerAction(Request $request) {
+      $current_logged_in = $this->getUser();
+      if (!$current_logged_in->hasRole('ROLE_SUPER_ADMIN')) {
+      $error = "У вас нет прав сделать это";
+      return $this->render('AppBundle:Admin:error.html.twig', array(''
+      . 'error' => $error));
+      }
+      if ($request->getMethod() == "POST") {
+      $userManager = $this->get('fos_user.user_manager');
+      $user = $userManager->createUser();
+      $username = $request->get('username');
+      $password = $request->get('password');
+      $pidar = $request->get('pidar');
+      $email = $request->get('email');
+      $check_user_is_exist = $userManager->findUserByUsername($username);
+      $check_email_is_exist = $userManager->findUserByEmail($email);
+      if (($check_user_is_exist) || ($check_email_is_exist)) {
+      $error = "Пользователь с таким логином или email существует";
+      return $this->render('AppBundle:Admin:error.html.twig', array(''
+      . 'error' => $error));
+      }
+      $createdAt = new \DateTime('now');
+      $emailConstraint = new Email();
+      $emailConstraint->message = 'Неправильный email-адрес';
+      $errorList = $this->get('validator')->validateValue($email, $emailConstraint);
+      if (count($errorList) != 0) {
+      $error = $errorList[0]->getMessage();
+      return $this->render('AppBundle:Admin:error.html.twig', array(''
+      . 'error' => $error));
+      }
 
-            $user->setUsername($username);
-            $user->setEmail($email);
-            $user->setPlainPassword($password);
-            $user->setCreatedAt($createdAt);
-            $user->addRole('ROLE_ADMIN');
-            $user->setEnabled(true);
-            $dm = $this->getDoctrine()->getManager();
-            $dm->persist($user);
-            $dm->flush();
-            $msg = "Вы зарегистрировали пользователя";
-            return $this->render('AppBundle:Admin:registration.html.twig', array(''
-                        . 'message' => $msg));
+      $user->setUsername($username);
+      $user->setEmail($email);
+      $user->setPlainPassword($password);
+      $user->setCreatedAt($createdAt);
+      $user->setpidar($pidar);
+      $user->addRole('ROLE_ADMIN');
+      $user->setEnabled(true);
+      $dm = $this->getDoctrine()->getManager();
+      $dm->persist($user);
+      $dm->flush();
+      $msg = "Вы зарегистрировали пользователя";
+      return $this->render('AppBundle:Admin:registration.html.twig', array(''
+      . 'message' => $msg));
+      }
+      return $this->render('AppBundle:Admin:registration.html.twig');
+      } */
+
+    /**
+     * @Route("/admin/registration", name="registration")
+     */
+    public function registerAction(Request $request) {
+        /** @var $formFactory \FOS\UserBundle\Form\Factory\FactoryInterface */
+        $formFactory = $this->get('fos_user.registration.form.factory');
+        /** @var $userManager \FOS\UserBundle\Model\UserManagerInterface */
+        $userManager = $this->get('fos_user.user_manager');
+        $user = $userManager->createUser();
+        $user->setEnabled(true);
+        $user->addRole('ROLE_ADMIN');
+
+        $form = $formFactory->createForm();
+        $form->setData($user);
+
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $userManager->updateUser($user);
+            } 
+  
         }
-        return $this->render('AppBundle:Admin:registration.html.twig');
+
+        return $this->render('AppBundle:Admin:register.html.twig', array(''
+                    . 'form' => $form->createView()));
     }
 
     /**
@@ -67,24 +113,38 @@ class AdminController extends Controller {
     public function editAction(Request $request, $id) {
         $userManager = $this->get('fos_user.user_manager');
         $user = $userManager->findUserBy(array('id' => $id));
-        $current_logged_user = $this->getUser();
+        $current_logged_in = $this->getUser();
+        if ($user->hasRole('ROLE_SUPER_ADMIN')) {
+            $error = "У вас нет прав сделать это";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
+        }
         if (!$user) {
-            throw $this->createNotFoundException('No user found');
+            $error = "Пользователь не найден";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
 
         if ($request->getMethod() == "POST") {
-            /* Если выбранный юзер супер админ, а ты авторизован как не супер
-             * админ, то выдать ошибку доступа
-             */
-            if (($user->hasRole('ROLE_SUPER_ADMIN')) &&
-                    (!$current_logged_user->hasRole('ROLE_SUPER_ADMIN'))) {
-                throw $this->createAccessDeniedException('You cant do that');
-            }
             $username = $request->get('username');
             $email = $request->get('email');
+            $pwd = $user->getPlainPassword();
             $user->setUsername($username);
             $user->setEmail($email);
             $userManager->updateUser($user);
+            $message = \Swift_Message::newInstance()
+                    ->setSubject('Администрация embodycode')
+                    ->setFrom('admin@embodycode.com')
+                    ->setTo($user->getEmail())
+                    ->setBody(
+                    '<h2>Добрый день!</h2> Вас приветствует администрация портала. '
+                    . 'Уважаемый пользователь, ваши данные были обновлены '
+                    . 'администратором ' . $current_logged_in->getUsername() . '<br>'
+                    . '<br><h3>Ваши новые данные для входа:</h3>'
+                    . 'Логин: ' . $username . '<br>'
+                    . 'Email: ' . $email . '', 'text/html'
+            );
+            $this->get('mailer')->send($message);
             return $this->redirectToRoute('adminpage');
         }
         return $this->render('AppBundle:Admin:edit.html.twig', array(
@@ -101,14 +161,20 @@ class AdminController extends Controller {
 
         $user = $userManager->findUserByUsername($username);
         if (!$user) {
-            throw $this->createNotFoundException('User not found');
+            $error = "Пользователь не найден";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
         if ($user->hasRole('ROLE_SUPER_ADMIN')) {
-            throw $this->createAccessDeniedException("You don't have permissions!");
+            $error = "У вас нет прав сделать это";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
 
         if ($user == $current_logged_in) {
-            throw $this->createAccessDeniedException("You can't remove yourself!");
+            $error = "Вы не можете удалить самого себя";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         } else
             $user = $userManager->deleteUser($user);
         return $this->redirectToRoute('adminpage');
@@ -123,12 +189,16 @@ class AdminController extends Controller {
         $current_logged_in = $this->getUser();
 
         if (!$user) {
-            throw $this->createNotFoundException('User not found!');
+            $error = "Пользователь не найден";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
 
         if ($request->getMethod() == "POST") {
             if (($user->hasRole('ROLE_SUPER_ADMIN')) && ((!$current_logged_in->hasRole('ROLE_SUPER_ADMIN')))) {
-                throw $this->createAccessDeniedException('You cant do that');
+                $error = "У вас нет прав сделать это";
+                return $this->render('AppBundle:Admin:error.html.twig', array(''
+                            . 'error' => $error));
             }
             $newpass = $request->get('newpass');
             $user->setPlainPassword($newpass);
@@ -151,14 +221,19 @@ class AdminController extends Controller {
             $username = $request->get('username');
             $user = $userManager->findUserByUsername($username);
             if (!$user) {
-                throw $this->createNotFoundException('User not found');
+                $error = "Пользователь с именем $username не найден";
+                return $this->render("AppBundle:Admin:error.html.twig", array(''
+                            . 'error' => $error));
             }
             if ($user->isLocked()) {
-                throw $this->createAccessDeniedException('You cant lock this user '
-                        . 'cause he already locked');
+                $error = "Пользователь $user уже заблокирован!";
+                return $this->render("AppBundle:Admin:error.html.twig", array(''
+                            . 'error' => $error));
             }
             if (($user->hasRole('ROLE_SUPER_ADMIN')) && (!$current_logged_in->hasRole('ROLE_SUPER_ADMIN'))) {
-                throw $this->createAccessDeniedException('You cant do that');
+                $error = "У вас нет прав сделать это";
+                return $this->render('AppBundle:Admin:error.html.twig', array(''
+                            . 'error' => $error));
             }
             $user->setLocked(1);
             $userManager->updateUser($user);
@@ -180,7 +255,9 @@ class AdminController extends Controller {
 
         $users = $query->getResult();
         if (!$users) {
-            throw $this->createNotFoundException('There are is no locked users');
+            $error = "Заблокированных пользователей нет";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
         return $this->render('AppBundle:Admin:banlist.html.twig', array(''
                     . 'users' => $users));
@@ -193,10 +270,14 @@ class AdminController extends Controller {
         $userManager = $this->get('fos_user.user_manager');
         $user = $userManager->findUserBy(array('id' => $id));
         if (!$user) {
-            throw $this->createNotFoundException('User not found');
+            $error = "Пользователь не найден";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
         if (!$user->isLocked()) {
-            throw $this->createNotFoundException('Error! Account is not locked');
+            $error = "Аккаунт не заблокирован";
+            return $this->render('AppBundle:Admin:error.html.twig', array(''
+                        . 'error' => $error));
         }
         $user->setLocked(0);
         $userManager->updateUser($user);
@@ -226,8 +307,6 @@ class AdminController extends Controller {
             $news->setCreatedAt($createdAt);
             $news->setUpdatedAt($updatedAt);
             $news->setPicture($picture);
-            $img = new \Imagick($picture);
-            $img->adaptiveresizeimage(600, 400);
             $em = $this->getDoctrine()->getManager();
             $em->persist($news);
             $em->flush();
@@ -245,19 +324,19 @@ class AdminController extends Controller {
         $current_logged_in = $this->getUser();
         $news_found = $this->getDoctrine()->getRepository("AppBundle:News")
                 ->findOneBy(array('id' => $id));
-        if(!$news_found)
-        {
-            throw $this->createNotFoundException("News not found!");
+        if (!$news_found) {
+            $error = "Новость не найдена";
+            return $this->render("AppBundle:Admin:error.html.twig", array(''
+                        . 'error' => $error));
         }
-        if($request->getMethod()=="POST")
-        {
+        if ($request->getMethod() == "POST") {
             $title = $request->get('title');
             $text = $request->get('text');
             $picture = $request->get('picture');
             $author = $request->get('author');
             $createdAt = $request->get('createdAt');
             $updatedAt = new \DateTime('now');
-            
+
             $news_found->setTitle($title);
             $news_found->setText($text);
             $news_found->setPicture($picture);
@@ -265,20 +344,45 @@ class AdminController extends Controller {
             $news_found->setLastUpdatedBy($current_logged_in);
             $news_found->setAuthor($news_found->getAuthor());
             $news_found->setCreatedAt($news_found->getCreatedAt());
-            
+
             $em = $this->getDoctrine()->getManager();
             $em->persist($news_found);
             $em->flush();
-            
+
             $msg = "Новость была обновлена!";
-            
+
             return $this->redirectToRoute('homepage');
         }
 
         return $this->render('AppBundle:Admin:newsedit.html.twig', array(''
                     . 'id' => $id, ''
-                    . 'user' => $current_logged_in,''
-            . 'news' => $news_found));
+                    . 'user' => $current_logged_in, ''
+                    . 'news' => $news_found));
+    }
+
+    /**
+     * @Route("/admin/banip/", name="banip")
+     */
+    public function banIPAction(Request $request) {
+        if ($request->getMethod() == "POST") {
+            $ip = $request->get('ip');
+            $reason = $request->get('reason');
+            $unbanDate = $request->get('date');
+
+            $blackIp = new BlacklistIp();
+            $blackIp->setIp($ip);
+            $blackIp->setReason($reason);
+            $blackIp->setUnbanDate($unbanDate);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($blackIp);
+            $em->flush();
+
+            $msg = "Вы успешно заблокировали ip $ip";
+            return $this->render('AppBundle:Admin:ipban.html.twig', array(''
+                        . 'msg' => $msg));
+        }
+        return $this->render('AppBundle:Admin:ipban.html.twig');
     }
 
 }

@@ -3,6 +3,7 @@
 namespace AppBundle\Security\Authorization\Voter;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Doctrine\ORM\EntityManager;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
@@ -11,11 +12,13 @@ use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
  *
  * @author artur
  */
-class ClientIpVoter {
+class ClientIpVoter implements VoterInterface {
+    
+    private $em;
 
-    public function __construct(ContainerInterface $container, array $blacklistedIp = array()) {
+    public function __construct(EntityManager $em, ContainerInterface $container) {
+        $this->em = $em;
         $this->container = $container;
-        $this->blacklistedIp = $blacklistedIp;
     }
 
     public function supportsAttribute($attribute) {
@@ -30,9 +33,14 @@ class ClientIpVoter {
 
     function vote(TokenInterface $token, $object, array $attributes) {
         $request = $this->container->get('request');
-        if (in_array($request->getClientIp(), $this->blacklistedIp)) {
+        $clientIp = $request->getClientIp();
+        $em = $this->em;
+        $ip_blocked = $em->getRepository("AppBundle:BlacklistIp")->findBy(array('ip' => $clientIp));
+        if($ip_blocked)
+        {
             return VoterInterface::ACCESS_DENIED;
         }
+            return VoterInterface::ACCESS_ABSTAIN;
     }
 }
     

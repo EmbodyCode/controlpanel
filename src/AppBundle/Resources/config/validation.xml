@@ -14,6 +14,11 @@
                     <value>Profile</value>
                 </option>
             </constraint>
+            
+            <constraint name="Regex">
+                <option name="pattern">/^[a-zA-Z0-9]+$/</option>
+                <option name="groups"><value>AppRegistration></value></option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">5</option>
                 <option name="minMessage">Логин должен содержать минимум 5 символов</option>
@@ -37,7 +42,7 @@
             <constraint name="Length">
                 <option name="min">5</option>
                 <option name="minMessage">Недопустимая длина email</option>
-                <option name="max">33</option>
+                <option name="max">38</option>
                 <option name="maxMessage">Недопустимая длина email</option>
                 <option name="groups">
                     <value>AppRegistration</value>
@@ -62,15 +67,17 @@
                     <value>ChangePassword</value>
                 </option>
             </constraint>
+            <constraint name="Regex">
+                <option name="pattern">/^[a-zA-Z0-9]+$/</option>
+                <option name="groups"><value>AppRegistration></value></option>
+            </constraint>
             <constraint name="Length">
                 <option name="min">2</option>
                 <option name="max">4096</option>
                 <option name="minMessage">Пароль слишком короткий</option>
                 <option name="groups">
                     <value>AppRegistration</value>
-                    <value>Profile</value>
-                    <value>ResetPassword</value>
-                    <value>ChangePassword</value>
+
                 </option>
             </constraint>
         </property>

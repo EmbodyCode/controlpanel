@@ -12,7 +12,7 @@
                 <a href="admin/news/{{n.id}}">Редактировать</a>
             {% endif %}
             <img src="{{n.picture}}" width="600" height="400"/>
-            <p class="blog-post-meta">{{n.createdAt|date('Создана d.m.Y в H:i')}} by {% if n.author == "admin" %}
+            {% if n.author == "admin" %} <p class="blog-post-meta">{{n.createdAt|date('Создана d.m.Y в H:i')}} by 
                 <a href="#"><font color="red">{{n.author}}</font></a></p> {% elseif n.author != "admin" %}
             <p class="blog-post-meta">{{n.createdAt|date('Создана d.m.Y в H:i')}} by <a href="#">{{n.author}}</a></p>
             {% endif %}

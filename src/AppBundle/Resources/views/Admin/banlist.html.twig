@@ -15,7 +15,7 @@
                 <tbody>
                     {% for user in users %}
                         <tr> 
-                            <td><a href="/unban/{{user.id}}"><input type="button" value="Тык" name="unban"></a></td>
+                            <td><a href="/admin/unban/{{user.id}}"><input type="button" value="Тык" name="unban"></a></td>
                             <td>{{user.username}}</td>
                             <td>{{user.email}}</td>
                         </tr>

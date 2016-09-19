@@ -37,11 +37,12 @@ class LoginListener implements EventSubscriberInterface
          $ip = $this->container->get('request')->getClientIp();
          if ($event instanceof UserEvent) {
             $user = $event->getUser();
+            $user->setlastIp($ip);
+            $userManager->updateUser($user);
          }
          if ($event instanceof InteractiveLoginEvent) {
             $user = $event->getAuthenticationToken()->getUser();
          }
-        $user->setlastIp($ip);
-        $userManager->updateUser($user);
+        
     }
 }

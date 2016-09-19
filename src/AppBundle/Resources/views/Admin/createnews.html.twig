@@ -5,11 +5,11 @@
         <h2 class="sub-header">Добавление новости</h2> 
         <form action="{{path('createNews')}}" method="POST">
             <label>Заголовок новости</label>
-            <input type="text" name="title" required autofocus/><br>
+            <input type="text" name="title" maxlength="40" required autofocus/><br>
             <label>Текст новости</label>
-            <textarea name="text" required autofocus></textarea><br>
-            <label>Картинка новости(необязательно)</label>
-            <input type="text" name="picture"><br>
+            <textarea name="text" maxlength="1000" required autofocus></textarea><br>
+            <label>Картинка новости</label>
+            <input type="text" name="picture" maxlength="255" required autofocus><br>
             <h3 class="sub-header"></h3>
             <input type="submit" value="Добавить">
         </form>
