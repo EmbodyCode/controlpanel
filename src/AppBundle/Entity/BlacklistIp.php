@@ -3,19 +3,23 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * BlacklistIp
  *
  * @ORM\Table()
  * @ORM\Entity
+ * @UniqueEntity("ip",message="IP уже заблокирован")
+ * 
  */
 class BlacklistIp
 {
     /**
      * @var integer
      *
-     * @ORM\Column(name="id", type="integer")
+     * @ORM\Column(name="id", type="integer", unique=true)
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
@@ -24,6 +28,8 @@ class BlacklistIp
      /**
      * @ORM\Column(name="ip", type="string", length=15)
      * @var string $ip
+      * @Assert\NotBlank(message="IP не может быть пустым")
+      * @Assert\Ip
      */
     private $ip;
 
@@ -31,6 +37,7 @@ class BlacklistIp
      * @var string
      *
      * @ORM\Column(name="reason", type="string", length=700)
+     * @Assert\NotBlank(message="Причина не может быть пустой")
      */
     private $reason;
 
@@ -109,7 +116,7 @@ class BlacklistIp
      */
     public function setUnbanDate($unbanDate)
     {
-        $this->unbanDate = new \DateTime($unbanDate);
+        $this->unbanDate = $unbanDate;
 
         return $this;
     }

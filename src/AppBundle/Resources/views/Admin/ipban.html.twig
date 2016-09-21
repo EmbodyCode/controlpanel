@@ -4,18 +4,10 @@
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h2 class="sub-header">Блокировка IP адреса</h2>
         <p><font size = "2" color="RED" face="Arial">Внимание! Данные внимательно заполнять и не допускать ошибок</font></p>
-        <form action="{{ path('banip')}}" method="POST">
-            <label>IP адрес</label>
-            <input type="text" name ="ip" required autofocus ><br>
-            <label>Причина бана</label>
-            <input type="text" name="reason" required autofocus><br>
-            <label>Дата окончания бана</label>
-            <input type="datetime" name="date" required autofocus><br>
-            <h3 class="sub-header"></h3>
-            <input type="submit" value="Заблокировать">
-        </form>   
-        {% if msg is defined %}
-            <font color="green">{{msg}}</font>
-        {% endif %}
-    </div>
-{% endblock %}
+            {% if form is defined %} {{ form_start(form, {'method': 'post', 'action': path('banip')}) }}
+                {{ form_widget(form) }} {% endif %}
+                {% if msg is defined %}
+                <font color="green">{{msg}}</font>
+            {% endif %}
+        </div>
+    {% endblock %}

@@ -6,9 +6,10 @@
   <link rel="stylesheet" type="text/css" href="{{asset('web/style/auth-style.css')}}">
  </head>
  <body>
+     {% trans_default_domain "FOSUserBundle" %}
      {% block fos_user_content %}
         {% if error %}
-            <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        <div><center>{{ error.messageKey|trans(error.messageData, 'security') }}</center></div>
         {% endif %}
    <div id="auth-form">
        <form action="{{ path("fos_user_security_check") }}" method="post">

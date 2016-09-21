@@ -9,10 +9,17 @@ services:
         arguments: [@service_container]
         tags:
             - { name: kernel.event_subscriber }
+            
+    app.form.registration:
+                class: AppBundle\Form\RegistrationType
+                tags:
+                    - { name: form.type, alias: app_user_registration }
       
     security.access.blacklist_voter:
         class:      AppBundle\Security\Authorization\Voter\ClientIpVoter
-        arguments:  ["@service_container", [46.53.195.112, 171.171.171.171]]
+        arguments:
+            - @doctrine.orm.entity_manager
+            - @service_container
         public:     false
         tags:
             - { name: security.voter }

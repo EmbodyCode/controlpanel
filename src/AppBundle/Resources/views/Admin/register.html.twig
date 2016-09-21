@@ -1,32 +1,17 @@
 {% extends "AppBundle:Admin:layout.html.twig" %}
 
 {% block containerUsers %}
+    {% trans_default_domain "FOSUserBundle" %}
     <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h2 class="sub-header">Регистрация нового пользователя</h2>
         {{ form_start(form, {'method': 'post', 'action': path('registration')}) }}
-
-        <label><strong>Логин</strong>
-            {{ form_widget(form.username) }}
-        </label><br>
-        <label><strong>Email</strong>
-            {{ form_widget(form.email) }}
-        </label><br>
-        <label><strong>Пароль</strong>
-            {{ form_widget(form.plainPassword.first) }}
-        </label><br>
-        <label><strong>Подтверждение пароля</strong>
-            {{ form_widget(form.plainPassword.second) }}
-        </label>
+        {{ form_widget(form) }}
 
         <h2 class="sub-header"></h2>
-            <input type="submit" value="{{ 'Зарегистрировать'|trans }}" />
+        <input type="submit" value="{{ 'registration.submit'|trans }}" />
         <h2 class="sub-header"></h2>
-        
-        {{ form_errors(form.username) }}
-        {{ form_errors(form.email) }}
-        {{ form_errors(form.plainPassword) }}
-        {{ form_errors(form.plainPassword) }}
-        
+        {{ form_errors(form) }}
+
+
     </div>
-    {{ form_end(form) }}
 {% endblock %}

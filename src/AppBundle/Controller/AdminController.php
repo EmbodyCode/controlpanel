@@ -30,54 +30,6 @@ class AdminController extends Controller {
                     . 'users' => $users));
     }
 
-    /* public function registerAction(Request $request) {
-      $current_logged_in = $this->getUser();
-      if (!$current_logged_in->hasRole('ROLE_SUPER_ADMIN')) {
-      $error = "У вас нет прав сделать это";
-      return $this->render('AppBundle:Admin:error.html.twig', array(''
-      . 'error' => $error));
-      }
-      if ($request->getMethod() == "POST") {
-      $userManager = $this->get('fos_user.user_manager');
-      $user = $userManager->createUser();
-      $username = $request->get('username');
-      $password = $request->get('password');
-      $pidar = $request->get('pidar');
-      $email = $request->get('email');
-      $check_user_is_exist = $userManager->findUserByUsername($username);
-      $check_email_is_exist = $userManager->findUserByEmail($email);
-      if (($check_user_is_exist) || ($check_email_is_exist)) {
-      $error = "Пользователь с таким логином или email существует";
-      return $this->render('AppBundle:Admin:error.html.twig', array(''
-      . 'error' => $error));
-      }
-      $createdAt = new \DateTime('now');
-      $emailConstraint = new Email();
-      $emailConstraint->message = 'Неправильный email-адрес';
-      $errorList = $this->get('validator')->validateValue($email, $emailConstraint);
-      if (count($errorList) != 0) {
-      $error = $errorList[0]->getMessage();
-      return $this->render('AppBundle:Admin:error.html.twig', array(''
-      . 'error' => $error));
-      }
-
-      $user->setUsername($username);
-      $user->setEmail($email);
-      $user->setPlainPassword($password);
-      $user->setCreatedAt($createdAt);
-      $user->setpidar($pidar);
-      $user->addRole('ROLE_ADMIN');
-      $user->setEnabled(true);
-      $dm = $this->getDoctrine()->getManager();
-      $dm->persist($user);
-      $dm->flush();
-      $msg = "Вы зарегистрировали пользователя";
-      return $this->render('AppBundle:Admin:registration.html.twig', array(''
-      . 'message' => $msg));
-      }
-      return $this->render('AppBundle:Admin:registration.html.twig');
-      } */
-
     /**
      * @Route("/admin/registration", name="registration")
      */
@@ -99,11 +51,42 @@ class AdminController extends Controller {
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
                 $userManager->updateUser($user);
-            } 
-  
+            }
         }
 
         return $this->render('AppBundle:Admin:register.html.twig', array(''
+                    . 'form' => $form->createView()));
+    }
+
+    /**
+     * @Route("/admin/addnews/", name="createNews")
+     */
+    public function addNewsAction(Request $request) {
+        $current_logged_in = $this->getUser();
+        $news = new News();
+        $news->setUpdatedAt(new \DateTime('now'));
+        $news->setCreatedAt(new \DateTime('now'));
+        $news->setAuthor($current_logged_in);
+        $form = $this->createFormBuilder($news)
+                ->add('title', 'text', array('label' => "Заголовок"))
+                ->add('text', 'textarea', array('label' => "Текст новости"))
+                ->add('picture', 'text', array('label' => 'Картинка(url)'))
+                ->add('author', 'hidden')
+                ->add('submit', 'submit', array('label' => 'Добавить'))
+                ->getForm();
+        $form->setData($news);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($news);
+                $em->flush();
+                $msg = "Новость была успешно добавлена!";
+                return $this->render("AppBundle:Admin:createnews.html.twig", array(''
+                            . 'message' => $msg));
+            }
+        }
+        return $this->render("AppBundle:Admin:createnews.html.twig", array(''
                     . 'form' => $form->createView()));
     }
 
@@ -124,31 +107,31 @@ class AdminController extends Controller {
             return $this->render('AppBundle:Admin:error.html.twig', array(''
                         . 'error' => $error));
         }
-
-        if ($request->getMethod() == "POST") {
-            $username = $request->get('username');
-            $email = $request->get('email');
-            $pwd = $user->getPlainPassword();
-            $user->setUsername($username);
-            $user->setEmail($email);
-            $userManager->updateUser($user);
-            $message = \Swift_Message::newInstance()
-                    ->setSubject('Администрация embodycode')
-                    ->setFrom('admin@embodycode.com')
-                    ->setTo($user->getEmail())
-                    ->setBody(
-                    '<h2>Добрый день!</h2> Вас приветствует администрация портала. '
-                    . 'Уважаемый пользователь, ваши данные были обновлены '
-                    . 'администратором ' . $current_logged_in->getUsername() . '<br>'
-                    . '<br><h3>Ваши новые данные для входа:</h3>'
-                    . 'Логин: ' . $username . '<br>'
-                    . 'Email: ' . $email . '', 'text/html'
-            );
-            $this->get('mailer')->send($message);
-            return $this->redirectToRoute('adminpage');
+        $form = $this->createFormBuilder($user)
+                ->add('username', 'text', array('label' => 'Имя пользователя'))
+                ->add('email', 'email', array('label' => 'Электронный адрес'))
+                ->add('submit', 'submit', array('label' => 'Сохранить'))
+                ->getForm();
+        $form->setData($user);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $userManager->updateUser($user);
+                $message = \Swift_Message::newInstance()
+                        ->setSubject('Администрация embodycode')
+                        ->setFrom('admin@embodycode.com')
+                        ->setTo($user->getEmail())
+                        ->setBody(
+                        '<h2>Добрый день!</h2> Вас приветствует администрация портала. '
+                        . 'Уважаемый пользователь, ваши данные были обновлены '
+                        . 'администратором ' . $current_logged_in->getUsername(), 'text/html'
+                );
+                $this->get('mailer')->send($message);
+                return $this->redirectToRoute('adminpage');
+            }
         }
         return $this->render('AppBundle:Admin:edit.html.twig', array(
-                    'user' => $user,
+                    'form' => $form->createView(),
                     'id' => $id));
     }
 
@@ -288,36 +271,6 @@ class AdminController extends Controller {
     }
 
     /**
-     * @Route("/admin/addnews/", name="createNews")
-     */
-    public function addNewsAction(Request $request) {
-        $current_logged_in = $this->getUser();
-        if ($request->getMethod() == "POST") {
-            $title = $request->get('title');
-            $text = $request->get('text');
-            $author = $current_logged_in->getUsername();
-            $createdAt = new \DateTime('now');
-            $updatedAt = new \DateTime('now');
-            $picture = $request->get('picture');
-
-            $news = new News();
-            $news->setTitle($title);
-            $news->setText($text);
-            $news->setAuthor($author);
-            $news->setCreatedAt($createdAt);
-            $news->setUpdatedAt($updatedAt);
-            $news->setPicture($picture);
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($news);
-            $em->flush();
-            $msg = "Новость была успешно добавлена!";
-            return $this->render("AppBundle:Admin:createnews.html.twig", array(''
-                        . 'message' => $msg));
-        }
-        return $this->render("AppBundle:Admin:createnews.html.twig");
-    }
-
-    /**
      * @Route("/admin/news/{id}", name="editnews")
      */
     public function editNewsAction($id, Request $request) {
@@ -329,60 +282,60 @@ class AdminController extends Controller {
             return $this->render("AppBundle:Admin:error.html.twig", array(''
                         . 'error' => $error));
         }
-        if ($request->getMethod() == "POST") {
-            $title = $request->get('title');
-            $text = $request->get('text');
-            $picture = $request->get('picture');
-            $author = $request->get('author');
-            $createdAt = $request->get('createdAt');
-            $updatedAt = new \DateTime('now');
+        $form = $this->createFormBuilder($news_found)
+                ->add('title', 'text', array('label' => 'Заголовок'))
+                ->add('text', 'textarea', array('label' => 'Текст новости'))
+                ->add('picture', 'text', array('label' => 'Картинка новости'))
+                ->add('submit', 'submit', array('label' => 'Сохранить'))
+                ->getForm();
+        $form->setData($news_found);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $news_found->setUpdatedAt(new \DateTime('now'));
+                $news_found->setLastUpdatedBy($current_logged_in);
+                $news_found->setAuthor($news_found->getAuthor());
+                $news_found->setCreatedAt($news_found->getCreatedAt());
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($news_found);
+                $em->flush();
+                $msg = "Новость была обновлена!";
 
-            $news_found->setTitle($title);
-            $news_found->setText($text);
-            $news_found->setPicture($picture);
-            $news_found->setUpdatedAt($updatedAt);
-            $news_found->setLastUpdatedBy($current_logged_in);
-            $news_found->setAuthor($news_found->getAuthor());
-            $news_found->setCreatedAt($news_found->getCreatedAt());
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($news_found);
-            $em->flush();
-
-            $msg = "Новость была обновлена!";
-
-            return $this->redirectToRoute('homepage');
+                return $this->redirectToRoute('homepage');
+            }
         }
 
         return $this->render('AppBundle:Admin:newsedit.html.twig', array(''
-                    . 'id' => $id, ''
-                    . 'user' => $current_logged_in, ''
-                    . 'news' => $news_found));
+                    . 'form' => $form->createView(), ''
+                    . 'id' => $id));
     }
 
     /**
      * @Route("/admin/banip/", name="banip")
      */
     public function banIPAction(Request $request) {
-        if ($request->getMethod() == "POST") {
-            $ip = $request->get('ip');
-            $reason = $request->get('reason');
-            $unbanDate = $request->get('date');
-
-            $blackIp = new BlacklistIp();
-            $blackIp->setIp($ip);
-            $blackIp->setReason($reason);
-            $blackIp->setUnbanDate($unbanDate);
-
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($blackIp);
-            $em->flush();
-
-            $msg = "Вы успешно заблокировали ip $ip";
-            return $this->render('AppBundle:Admin:ipban.html.twig', array(''
-                        . 'msg' => $msg));
+        $current_logged_in = $this->getUser();
+        $blackIp = new BlacklistIp();
+        $form = $this->createFormBuilder($blackIp)
+                ->add('ip', 'text', array('label' => "IP-адрес"))
+                ->add('reason', 'text', array('label' => "Причина бана"))
+                ->add('unbanDate', 'datetime', array('label' => 'Дата разбана'))
+                ->add('submit', 'submit', array('label' => 'Добавить'))
+                ->getForm();
+        $form->setData($blackIp);
+        $form->handleRequest($request);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($blackIp);
+                $em->flush();
+                $msg = "IP адрес был успешно заблкирован";
+                return $this->render("AppBundle:Admin:ipban.html.twig", array(''
+                            . 'msg' => $msg));
+            }
         }
-        return $this->render('AppBundle:Admin:ipban.html.twig');
+        return $this->render("AppBundle:Admin:ipban.html.twig", array(''
+                    . 'form' => $form->createView()));
     }
 
 }
